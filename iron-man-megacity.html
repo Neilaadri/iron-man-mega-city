@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRON MAN // STARK FLIGHT PROTOCOL</title>
+<style>
+:root{
+  --cyan:#00eaff; --cyan2:#77f7ff; --gold:#ffc94a; --red:#ff3858;
+  --green:#65ffad; --purple:#b866ff; --bg:#02070d;
+  --panel:rgba(3,13,23,.82); --line:rgba(0,234,255,.25);
+  --text:#ebfcff; --muted:#7da7b5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+button{font:inherit}
+#app{position:fixed;inset:0;background:#000}
+.screen{position:absolute;inset:0;opacity:0;visibility:hidden;pointer-events:none;transform:scale(1.015);transition:opacity .5s ease,transform .5s ease,visibility .5s}
+.screen.active{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1)}
+
+/* ============================ MENU ============================ */
+#menu{overflow:auto;padding:34px 42px;background:
+  radial-gradient(circle at 74% 47%,rgba(0,234,255,.075),transparent 28%),
+  linear-gradient(rgba(0,234,255,.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,234,255,.025) 1px,transparent 1px),#02070d;
+background-size:auto,42px 42px,42px 42px}
+.menu-grid{min-height:100%;display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;max-width:1500px;margin:auto}
+.hero{padding:10px 20px 20px 4vw}
+.kicker{color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.3em;text-shadow:0 0 14px rgba(0,234,255,.4);animation:pulse 2s infinite}
+.hero h1{font-size:clamp(48px,7vw,102px);line-height:.9;margin-top:18px;font-weight:900;letter-spacing:-.055em;text-transform:uppercase}
+.hero h1 span{display:block;color:var(--gold);text-shadow:0 0 20px rgba(255,201,74,.28)}
+.hero p{max-width:680px;margin-top:24px;color:#9bc2ce;font-size:15px;line-height:1.65}
+.start-btn{position:relative;margin-top:30px;width:310px;padding:17px 22px;border:1px solid var(--cyan);background:linear-gradient(90deg,rgba(0,234,255,.11),rgba(255,201,74,.08));color:var(--text);font-weight:900;letter-spacing:.16em;cursor:pointer;overflow:hidden;box-shadow:0 0 28px rgba(0,234,255,.08),inset 0 0 25px rgba(0,234,255,.03);transition:.22s}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 0 35px rgba(0,234,255,.18),inset 0 0 30px rgba(0,234,255,.08)}
+.start-btn:disabled{opacity:.5;cursor:not-allowed}
+.menu-info{margin-top:22px;display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:10px}
+.pill{border:1px solid rgba(0,234,255,.16);padding:7px 9px;background:rgba(0,234,255,.025)}
+
+.console{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(7px);box-shadow:0 0 55px rgba(0,234,255,.06),inset 0 0 35px rgba(0,234,255,.02);padding:20px;position:relative}
+.console:before,.console:after{content:"";position:absolute;width:20px;height:20px;border-color:var(--cyan)}
+.console:before{left:-1px;top:-1px;border-left:2px solid;border-top:2px solid}
+.console:after{right:-1px;bottom:-1px;border-right:2px solid;border-bottom:2px solid}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-head strong{font-size:11px;letter-spacing:.18em;color:var(--cyan)}
+.online{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 13px var(--green);animation:blink 1.2s infinite}
+.preview{height:245px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(0,234,255,.12);background:radial-gradient(circle at center,rgba(0,234,255,.08),transparent 52%),rgba(0,0,0,.16);margin-bottom:13px}
+.preview-ring{position:absolute;width:170px;height:170px;border:1px solid rgba(0,234,255,.27);border-radius:50%;box-shadow:0 0 40px rgba(0,234,255,.07),inset 0 0 30px rgba(0,234,255,.04);animation:spin 12s linear infinite}
+.preview-ring:before{content:"";position:absolute;inset:22px;border:1px dashed rgba(255,255,255,.12);border-radius:50%}
+.suit{width:120px;height:195px;position:relative;transform:scale(1.05);filter:drop-shadow(0 0 14px rgba(0,234,255,.14))}
+.suit-head{position:absolute;left:37px;top:2px;width:46px;height:55px;background:linear-gradient(135deg,#ff5246,#7d0710);border:2px solid var(--gold);clip-path:polygon(17% 0,83% 0,100% 25%,87% 100%,13% 100%,0 25%)}
+.suit-eye{position:absolute;top:22px;width:16px;height:5px;background:#dffeff;box-shadow:0 0 12px var(--cyan)}
+.suit-eye.l{left:7px;transform:skewX(-20deg)}.suit-eye.r{right:7px;transform:skewX(20deg)}
+.suit-body{position:absolute;top:49px;left:25px;width:70px;height:96px;background:linear-gradient(135deg,#e12a2c,#9c0b13 48%,#3c0508);clip-path:polygon(18% 0,82% 0,100% 20%,90% 100%,10% 100%,0 20%);border:2px solid var(--gold)}
+.suit-reactor{position:absolute;left:50px;top:75px;width:21px;height:21px;border-radius:50%;background:#f5ffff;box-shadow:0 0 9px #fff,0 0 24px var(--cyan),0 0 40px var(--cyan);z-index:2}
+.suit-arm{position:absolute;top:57px;width:20px;height:77px;background:linear-gradient(#c51720,#5b070c)}.suit-arm.l{left:6px;transform:rotate(8deg)}.suit-arm.r{right:6px;transform:rotate(-8deg)}
+.suit-leg{position:absolute;top:130px;width:25px;height:63px;background:linear-gradient(#a7131b,#3b0509)}.suit-leg.l{left:30px}.suit-leg.r{right:30px}
+.choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.choice{border:1px solid rgba(0,234,255,.18);background:rgba(0,0,0,.19);padding:12px;cursor:pointer;transition:.2s}
+.choice:hover,.choice.selected{border-color:var(--gold);box-shadow:inset 0 0 20px rgba(255,201,74,.06);transform:translateY(-1px)}
+.choice h3{font-size:11px}.choice p{margin-top:5px;color:var(--muted);font-size:9px;line-height:1.35}
+.choice small{display:block;margin-top:8px;color:var(--gold);font-size:8px;letter-spacing:.08em}
+.divider{height:1px;background:rgba(0,234,255,.13);margin:16px 0}
+.map-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.map-choice{border:1px solid rgba(0,234,255,.18);background:rgba(0,0,0,.18);padding:12px;cursor:pointer;min-height:92px;transition:.2s;position:relative}
+.map-choice:hover,.map-choice.selected{border-color:var(--cyan);box-shadow:inset 0 0 25px rgba(0,234,255,.05)}
+.map-choice strong{font-size:11px;letter-spacing:.08em}.map-choice p{margin-top:6px;color:var(--muted);font-size:9px;line-height:1.4}.map-tag{position:absolute;right:9px;top:9px;color:var(--cyan);font-size:8px;border:1px solid rgba(0,234,255,.2);padding:3px 5px}
+.scoreline{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:var(--muted);font-size:9px;letter-spacing:.16em}.scoreline strong{color:var(--gold);font-size:22px;letter-spacing:.04em;text-shadow:0 0 12px rgba(255,201,74,.28)}
+
+/* ============================ GAME ============================ */
+#game{background:#01050a}
+#game canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;inset:0;pointer-events:none}
+.hud:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,234,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,234,255,.018) 1px,transparent 1px);background-size:44px 44px;opacity:.32}
+.hud:after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 150px rgba(0,0,0,.68)}
+.topbar{position:absolute;left:18px;right:18px;top:16px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.hud-panel{border:1px solid rgba(0,234,255,.23);background:rgba(2,10,18,.71);backdrop-filter:blur(5px);box-shadow:0 0 20px rgba(0,0,0,.18);padding:9px 12px}
+.score{min-width:160px}.label{color:var(--muted);font-size:8px;letter-spacing:.2em}.value{margin-top:3px;font-size:24px;font-weight:900}.gold{color:var(--gold);text-shadow:0 0 10px rgba(255,201,74,.25)}
+.bars{width:min(320px,32vw);display:grid;gap:8px}.barrow{display:grid;grid-template-columns:75px 1fr;gap:8px;align-items:center}.bar{height:8px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.12);overflow:hidden}.fill{height:100%;width:100%;transition:width .12s}.health{background:linear-gradient(90deg,#ff2749,#ff814f);box-shadow:0 0 12px rgba(255,39,73,.42)}.energy{background:linear-gradient(90deg,#00bde8,#7fffff);box-shadow:0 0 12px rgba(0,234,255,.35)}.heat{background:linear-gradient(90deg,#ffc94a,#ff4c3f)}
+.rightstack{display:grid;gap:8px;width:280px}.readout{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:9px;letter-spacing:.12em}.readout strong{color:var(--text);font-size:11px}.button{pointer-events:auto;border:1px solid rgba(0,234,255,.22);background:rgba(2,10,18,.8);color:var(--cyan);padding:8px 12px;cursor:pointer;font-size:9px;font-weight:800;letter-spacing:.13em}.button:hover{border-color:var(--cyan);box-shadow:0 0 17px rgba(0,234,255,.15)}
+.crosshair{position:absolute;left:50%;top:50%;width:72px;height:72px;transform:translate(-50%,-50%);opacity:.54}.crosshair:before,.crosshair:after{content:"";position:absolute;background:rgba(0,234,255,.8)}.crosshair:before{left:0;top:35px;width:72px;height:1px}.crosshair:after{left:35px;top:0;width:1px;height:72px}.crosshair i{position:absolute;inset:13px;border:1px solid rgba(0,234,255,.65);border-radius:50%;animation:spin 5s linear infinite}
+.bottom-left,.bottom-right{position:absolute;bottom:18px;padding:12px;background:rgba(2,10,18,.72);backdrop-filter:blur(4px);border-top:1px solid var(--line)}.bottom-left{left:18px;width:330px;border-right:2px solid var(--cyan)}.bottom-right{right:18px;width:340px;text-align:right;border-left:2px solid var(--cyan)}.district-title{font-size:8px;color:var(--cyan);font-weight:800;letter-spacing:.23em}.district-name{font-size:19px;font-weight:900;margin-top:4px;letter-spacing:.08em}.district-desc{font-size:9px;line-height:1.45;color:var(--muted);margin-top:4px}.control-title{font-size:8px;color:var(--gold);font-weight:800;letter-spacing:.2em}.controls-text{font-size:9px;color:var(--muted);line-height:1.7;margin-top:5px}.key{display:inline-block;padding:2px 5px;border:1px solid rgba(0,234,255,.18);color:var(--text);margin:0 2px}
+.reticle-target{position:absolute;right:24%;top:41%;width:96px;height:96px;border:1px solid rgba(255,56,88,.5);transform:translate(-50%,-50%) rotate(45deg);opacity:0;transition:opacity .15s}.reticle-target.active{opacity:.55}.reticle-target:before{content:"";position:absolute;inset:18px;border:1px solid rgba(255,56,88,.7)}.reticle-target span{position:absolute;transform:rotate(-45deg);left:108px;top:5px;color:#ff7891;white-space:nowrap;font-size:8px;letter-spacing:.18em}
+#message{position:absolute;left:50%;top:24%;transform:translateX(-50%);padding:9px 14px;background:rgba(2,10,18,.74);border:1px solid rgba(0,234,255,.25);color:var(--cyan);font-size:9px;letter-spacing:.18em;opacity:0;transition:.3s}#message.show{opacity:1}
+
+#gameover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,4,8,.78);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:.4s}.gameover-box{width:min(500px,calc(100vw - 36px));padding:32px;text-align:center;border:1px solid rgba(255,56,88,.5);background:rgba(8,10,16,.93);box-shadow:0 0 55px rgba(255,56,88,.13)}#gameover.active{opacity:1;visibility:visible;pointer-events:auto}.gameover-box h2{font-size:31px;color:var(--red);letter-spacing:.09em}.gameover-box p{margin-top:10px;color:var(--muted);font-size:12px}.final-score{display:block;color:var(--gold);font-size:46px;font-weight:900;margin:20px 0}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+
+@keyframes pulse{0%,100%{opacity:.65}50%{opacity:1}}@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:980px){.menu-grid{grid-template-columns:1fr}.hero{padding:15px}.topbar{flex-wrap:wrap}.rightstack{display:none}.bars{width:250px}.bottom-right{width:260px}.bottom-left{width:260px}}
+@media(max-width:650px){#menu{padding:20px}.hero h1{font-size:48px}.console{padding:15px}.choice-row{grid-template-columns:1fr}.map-grid{grid-template-columns:1fr}.start-btn{width:100%}.bottom-left,.bottom-right{width:220px}.bottom-right{font-size:8px}.score{min-width:130px}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ============================ FRONT PAGE ============================ -->
+<section id="menu" class="screen active">
+  <div class="menu-grid">
+    <div class="hero">
+      <div class="kicker">STARK INDUSTRIES // FLIGHT &amp; DEFENSE NETWORK</div>
+      <h1>IRON MAN<span>ARMOUR PROTOCOL</span></h1>
+      <p>
+        Suit systems, flight control and the procedural mega-city are now merged into one simulation.
+        Pick an armour, pick a district, then launch into a streamed cyber-city filled with towers,
+        neon roads, traffic trails, drones and live combat.
+      </p>
+      <button id="startButton" class="start-btn">INITIALIZE IRON MAN</button>
+      <div class="menu-info">
+        <div class="pill">WASD / ARROWS = FLIGHT</div>
+        <div class="pill">R / F = ALTITUDE</div>
+        <div class="pill">SPACE = REPULSOR</div>
+        <div class="pill">SHIFT = BOOST</div>
+        <div class="pill">MOUSE = LOOK</div>
+      </div>
+    </div>
+
+    <div class="console">
+      <div class="section-head"><strong>ARMOUR SYSTEM // LOADOUT</strong><div class="online"></div></div>
+      <div class="preview">
+        <div class="preview-ring"></div>
+        <div class="suit">
+          <div class="suit-head"><i class="suit-eye l"></i><i class="suit-eye r"></i></div>
+          <div class="suit-body"></div><div class="suit-reactor"></div>
+          <div class="suit-arm l"></div><div class="suit-arm r"></div>
+          <div class="suit-leg l"></div><div class="suit-leg r"></div>
+        </div>
+      </div>
+      <div class="choice-row" id="armourChoices">
+        <div class="choice selected" data-armour="MARK III"><h3>MARK III</h3><p>Balanced flight / combat</p><small>ARMOR 100 • SPEED 100</small></div>
+        <div class="choice" data-armour="MARK XLVII"><h3>MARK XLVII</h3><p>High mobility interceptor</p><small>ARMOR 88 • SPEED 122</small></div>
+        <div class="choice" data-armour="MARK LXXXV"><h3>MARK LXXXV</h3><p>Heavy energy platform</p><small>ARMOR 122 • SPEED 88</small></div>
+      </div>
+      <div class="divider"></div>
+      <div class="section-head"><strong>MAP SELECT // 100KM × 100KM WORLD</strong><div class="online"></div></div>
+      <div class="map-grid" id="mapChoices">
+        <div class="map-choice selected" data-map="core"><span class="map-tag">DENSE</span><strong>CENTRAL CORE</strong><p>Ultra-tall monoliths, tight neon corridors and heavy aerial traffic.</p></div>
+        <div class="map-choice" data-map="industrial"><span class="map-tag">HEAVY</span><strong>INDUSTRIAL GRID</strong><p>Factory blocks, broad roads, amber lighting and open flight lanes.</p></div>
+        <div class="map-choice" data-map="metro"><span class="map-tag">MIXED</span><strong>METROPOLITAN BELT</strong><p>Mixed residential and commercial towers surrounding the core.</p></div>
+        <div class="map-choice" data-map="outskirts"><span class="map-tag">WIDE</span><strong>OUTER SPRAWL</strong><p>Lower skyline, longer roads and a much wider horizon.</p></div>
+      </div>
+      <div class="scoreline"><span>PERSONAL HIGH SCORE</span><strong id="highScore">000000</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GAME PAGE ============================ -->
+<section id="game" class="screen">
+  <div id="scene"></div>
+  <div class="hud">
+    <div class="topbar">
+      <div class="hud-panel score"><div class="label">LIVE SCORE</div><div id="scoreValue" class="value gold">000000</div></div>
+      <div class="bars">
+        <div class="hud-panel barrow"><div class="label">ARMOUR</div><div class="bar"><div id="healthFill" class="fill health"></div></div></div>
+        <div class="hud-panel barrow"><div class="label">ENERGY</div><div class="bar"><div id="energyFill" class="fill energy"></div></div></div>
+        <div class="hud-panel barrow"><div class="label">HEAT</div><div class="bar"><div id="heatFill" class="fill heat"></div></div></div>
+      </div>
+      <div class="rightstack">
+        <div class="hud-panel">
+          <div class="readout"><span>ARMOUR</span><strong id="armourReadout">MARK III</strong></div>
+          <div class="readout"><span>MAP</span><strong id="mapReadout">CENTRAL CORE</strong></div>
+          <div class="readout"><span>ALTITUDE</span><strong id="altitudeValue">250 M</strong></div>
+          <div class="readout"><span>THREATS</span><strong id="threatValue">0</strong></div>
+        </div>
+        <button id="pauseButton" class="button">PAUSE [ESC]</button>
+      </div>
+    </div>
+
+    <div id="crosshair" class="crosshair"><i></i></div>
+    <div id="targetReticle" class="reticle-target"><span>HOSTILE LOCK</span></div>
+    <div id="message">SYSTEM READY</div>
+
+    <div class="bottom-left">
+      <div class="district-title">ACTIVE CITY DISTRICT</div>
+      <div id="districtName" class="district-name">CENTRAL CORE</div>
+      <div id="districtDesc" class="district-desc">Hyper-dense monoliths and high-volume aerial traffic.</div>
+    </div>
+
+    <div class="bottom-right">
+      <div class="control-title">IRON MAN FLIGHT CONTROLS</div>
+      <div class="controls-text"><span class="key">W A S D</span> MOVE <span class="key">R / F</span> RISE / DESCEND<br><span class="key">SPACE</span> REPULSOR <span class="key">SHIFT</span> BOOST <span class="key">MOUSE</span> LOOK</div>
+    </div>
+  </div>
+
+  <div id="gameover">
+    <div class="gameover-box">
+      <h2>ARMOUR SYSTEM OFFLINE</h2>
+      <p>The defense simulation has ended.</p>
+      <span id="finalScore" class="final-score">000000</span>
+      <div class="actions">
+        <button id="restartButton" class="button">RESTART MISSION</button>
+        <button id="menuButton" class="button">RETURN TO STARK OS</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js";
+
+/* ================================================================
+   IRON MAN + PROCEDURAL MEGA-CITY
+   ---------------------------------------------------------------
+   The world is conceptually 100 km × 100 km.
+   We do NOT build all 10,000 km² at once.
+
+   Instead:
+   1. The city is divided into 1 km chunks.
+   2. Only chunks near Iron Man are loaded.
+   3. Buildings inside each chunk use InstancedMesh.
+   4. Far chunks are unloaded.
+   5. Traffic uses another InstancedMesh.
+
+   This keeps object counts and draw calls manageable while the
+   simulated world remains enormous.
+   ================================================================ */
+
+const WORLD_SIZE = 100000;
+const HALF_WORLD = WORLD_SIZE / 2;
+const CHUNK_SIZE = 1000;
+const LOAD_RADIUS = 2;
+const ROAD_SPACING = 250;
+const ROAD_WIDTH = 34;
+const MAX_DT = 0.033;
+
+const menu = document.getElementById("menu");
+const game = document.getElementById("game");
+const sceneRoot = document.getElementById("scene");
+const startButton = document.getElementById("startButton");
+const restartButton = document.getElementById("restartButton");
+const menuButton = document.getElementById("menuButton");
+const pauseButton = document.getElementById("pauseButton");
+const gameover = document.getElementById("gameover");
+const scoreValue = document.getElementById("scoreValue");
+const finalScore = document.getElementById("finalScore");
+const highScore = document.getElementById("highScore");
+const healthFill = document.getElementById("healthFill");
+const energyFill = document.getElementById("energyFill");
+const heatFill = document.getElementById("heatFill");
+const armourReadout = document.getElementById("armourReadout");
+const mapReadout = document.getElementById("mapReadout");
+const altitudeValue = document.getElementById("altitudeValue");
+const threatValue = document.getElementById("threatValue");
+const districtName = document.getElementById("districtName");
+const districtDesc = document.getElementById("districtDesc");
+const message = document.getElementById("message");
+const targetReticle = document.getElementById("targetReticle");
+
+const selected = {
+  armour: "MARK III",
+  map: "core"
+};
+
+const armourStats = {
+  "MARK III": { maxHealth:100, maxEnergy:100, speed:520, boost:1.9, shotCost:6, heatPerShot:7 },
+  "MARK XLVII": { maxHealth:88, maxEnergy:118, speed:625, boost:2.05, shotCost:5, heatPerShot:6 },
+  "MARK LXXXV": { maxHealth:122, maxEnergy:92, speed:455, boost:1.75, shotCost:7, heatPerShot:8 }
+};
+
+const mapDefs = {
+  core: {
+    name:"CENTRAL CORE",
+    description:"Hyper-dense monoliths and high-volume aerial traffic.",
+    density:1.0, minH:300, maxH:1100, accent:0x00eaff,
+    start:[0,380,900], sky:0x020817, fog:0.00052, trafficScale:1.35, droneRate:1.05
+  },
+  industrial: {
+    name:"INDUSTRIAL GRID",
+    description:"Factory blocks, broad roads, amber lighting and open flight lanes.",
+    density:.82, minH:75, maxH:300, accent:0xffc94a,
+    start:[0,300,1000], sky:0x08090e, fog:0.00040, trafficScale:1.05, droneRate:1.18
+  },
+  metro: {
+    name:"METROPOLITAN BELT",
+    description:"Mixed residential and commercial towers surrounding the core.",
+    density:.92, minH:110, maxH:650, accent:0xff42d7,
+    start:[-900,310,850], sky:0x040914, fog:0.00046, trafficScale:1.18, droneRate:.95
+  },
+  outskirts: {
+    name:"OUTER SPRAWL",
+    description:"Lower skyline, long roads and a much wider horizon.",
+    density:.58, minH:24, maxH:155, accent:0x4be6ff,
+    start:[1000,240,1300], sky:0x031016, fog:0.00032, trafficScale:.78, droneRate:1.45
+  }
+};
+
+function fmtScore(n){return Math.floor(n).toString().padStart(6,"0")}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function randomRange(a,b){return a+Math.random()*(b-a)}
+function showMessage(text, ms=1200){message.textContent=text;message.classList.add("show");clearTimeout(showMessage.t);showMessage.t=setTimeout(()=>message.classList.remove("show"),ms)}
+
+let savedHigh = Number(localStorage.getItem("ironManMegaHigh")||0);
+highScore.textContent = fmtScore(savedHigh);
+
+/* ------------------------- menu selectors ------------------------- */
+document.querySelectorAll("#armourChoices .choice").forEach(el=>{
+  el.addEventListener("click",()=>{
+    document.querySelectorAll("#armourChoices .choice").forEach(x=>x.classList.remove("selected"));
+    el.classList.add("selected");
+    selected.armour = el.dataset.armour;
+  });
+});
+
+document.querySelectorAll("#mapChoices .map-choice").forEach(el=>{
+  el.addEventListener("click",()=>{
+    document.querySelectorAll("#mapChoices .map-choice").forEach(x=>x.classList.remove("selected"));
+    el.classList.add("selected");
+    selected.map = el.dataset.map;
+  });
+});
+
+/* ------------------------- Three core ------------------------- */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(67,innerWidth/innerHeight,.5,30000);
+camera.position.set(0,380,900);
+
+const renderer = new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+sceneRoot.appendChild(renderer.domElement);
+
+const ambient = new THREE.AmbientLight(0x456879,1.25); scene.add(ambient);
+const moon = new THREE.DirectionalLight(0x8eafff,1.6); moon.position.set(3000,6000,1500); scene.add(moon);
+const neonCyanLight = new THREE.PointLight(0x00eaff,1800,6500,2); scene.add(neonCyanLight);
+const neonGoldLight = new THREE.PointLight(0xffc94a,900,5200,2); scene.add(neonGoldLight);
+
+const groundGeo = new THREE.PlaneGeometry(WORLD_SIZE,WORLD_SIZE);
+const groundMat = new THREE.MeshStandardMaterial({color:0x02070d,roughness:1,metalness:0});
+const ground = new THREE.Mesh(groundGeo,groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-2;scene.add(ground);
+
+/* Entire-world coordinate grid; only 200 divisions so it stays cheap. */
+const worldGrid = new THREE.GridHelper(WORLD_SIZE,200,0x0c3d49,0x071a23);
+worldGrid.material.transparent=true;worldGrid.material.opacity=.16;scene.add(worldGrid);
+
+/* ------------------------- procedural textures ------------------------- */
+function windowTexture(base="#061018",glow="#58eaff",hot="#ffffff"){
+  const c=document.createElement("canvas");c.width=256;c.height=512;const g=c.getContext("2d");
+  g.fillStyle=base;g.fillRect(0,0,256,512);
+  for(let y=0;y<512;y+=28){g.fillStyle="#0b1821";g.fillRect(0,y,256,3)}
+  for(let y=10;y<505;y+=18){
+    for(let x=7;x<250;x+=20){
+      const r=Math.random();
+      g.globalAlpha=.25+Math.random()*.72;
+      g.fillStyle=r<.08?hot:glow;
+      g.fillRect(x,y,9,5);
+    }
+  }
+  g.globalAlpha=1;
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.wrapS=THREE.RepeatWrapping;tex.wrapT=THREE.RepeatWrapping;return tex;
+}
+const texCyan=windowTexture("#061018","#56eaff","#ffffff");
+const texGold=windowTexture("#12100a","#ffc94a","#fff3bd");
+const texPink=windowTexture("#100711","#ff53d6","#ffd3f6");
+const texWhite=windowTexture("#071117","#b8efff","#ffffff");
+
+function buildingMat(color,tex,em=0x12303c){return new THREE.MeshStandardMaterial({color,map:tex,emissive:em,emissiveMap:tex,metalness:.66,roughness:.52})}
+const matCyan=buildingMat(0x17333f,texCyan,0x0f303a);
+const matGold=buildingMat(0x302915,texGold,0x3a2811);
+const matPink=buildingMat(0x251b32,texPink,0x321029);
+const matWhite=buildingMat(0x182a35,texWhite,0x16333e);
+const buildingGeo=new THREE.BoxGeometry(1,1,1);
+const accentGeo=new THREE.BoxGeometry(1,1,1);
+const roadGeoX=new THREE.BoxGeometry(CHUNK_SIZE,.6,ROAD_WIDTH);
+const roadGeoZ=new THREE.BoxGeometry(ROAD_WIDTH,.6,CHUNK_SIZE);
+const roadEdgeX=new THREE.BoxGeometry(CHUNK_SIZE,1.1,1.5);
+const roadEdgeZ=new THREE.BoxGeometry(1.5,1.1,CHUNK_SIZE);
+const roadMat=new THREE.MeshStandardMaterial({color:0x050910,roughness:.96,metalness:.04});
+const cyanMat=new THREE.MeshBasicMaterial({color:0x00eaff});
+const goldMat=new THREE.MeshBasicMaterial({color:0xffc94a});
+const pinkMat=new THREE.MeshBasicMaterial({color:0xff3ad0});
+
+/* deterministic chunk RNG */
+function seeded(seed){let x=seed>>>0;return()=>{x+=0x6D2B79F5;let t=x;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function seedFor(cx,cz){return((Math.imul(cx,73856093)^Math.imul(cz,19349663))>>>0)}
+function worldChunk(x,z){return{cx:Math.floor((x+HALF_WORLD)/CHUNK_SIZE),cz:Math.floor((z+HALF_WORLD)/CHUNK_SIZE)}}
+function chunkCenter(cx,cz){return{x:-HALF_WORLD+cx*CHUNK_SIZE+CHUNK_SIZE/2,z:-HALF_WORLD+cz*CHUNK_SIZE+CHUNK_SIZE/2}}
+
+const chunks=new Map();
+
+function makeChunk(cx,cz){
+  const key=`${cx},${cz}`;if(chunks.has(key))return;
+  if(cx<0||cz<0||cx>=WORLD_SIZE/CHUNK_SIZE||cz>=WORLD_SIZE/CHUNK_SIZE)return;
+  const center=chunkCenter(cx,cz);const rng=seeded(seedFor(cx,cz));const def=mapDefs[selected.map];
+  const g=new THREE.Group();g.position.set(center.x,0,center.z);
+  const buildingMatrices=[],accentMatrices=[];
+
+  /* Roads are generated consistently across chunk boundaries. */
+  for(let i=-2;i<=2;i++){
+    const o=i*ROAD_SPACING;
+    const rx=new THREE.Mesh(roadGeoX,roadMat);rx.position.set(0,.3,o);g.add(rx);
+    const rz=new THREE.Mesh(roadGeoZ,roadMat);rz.position.set(o,.31,0);g.add(rz);
+    const edgeX=new THREE.Mesh(roadEdgeX,selected.map==="industrial"?goldMat:cyanMat);edgeX.position.set(0,.62,o-ROAD_WIDTH*.36);g.add(edgeX);
+    const edgeZ=new THREE.Mesh(roadEdgeZ,selected.map==="core"?cyanMat:pinkMat);edgeZ.position.set(o-ROAD_WIDTH*.36,.64,0);g.add(edgeZ);
+  }
+
+  /* About 100 lots per sector; one instanced mesh for buildings. */
+  const lots=10;
+  for(let ix=0;ix<lots;ix++){
+    for(let iz=0;iz<lots;iz++){
+      if(rng()>def.density)continue;
+      const cell=CHUNK_SIZE/lots;
+      const lx=-CHUNK_SIZE/2+cell*(ix+.5);
+      const lz=-CHUNK_SIZE/2+cell*(iz+.5);
+      const nearRoadX=Math.abs(((lx+CHUNK_SIZE/2)%ROAD_SPACING)-ROAD_SPACING/2);
+      const nearRoadZ=Math.abs(((lz+CHUNK_SIZE/2)%ROAD_SPACING)-ROAD_SPACING/2);
+      if(nearRoadX<ROAD_WIDTH*.42||nearRoadZ<ROAD_WIDTH*.42)continue;
+      const w=26+rng()*(def.maxH>700?72:60);
+      const d=26+rng()*(def.maxH>700?72:60);
+      let h=def.minH+rng()*(def.maxH-def.minH);
+      if(selected.map==="core"&&rng()<.10)h=900+rng()*350;
+      if(selected.map==="metro"&&rng()<.07)h=500+rng()*320;
+      const m=new THREE.Matrix4();m.compose(new THREE.Vector3(lx,h/2,lz),new THREE.Quaternion(),new THREE.Vector3(w,h,d));buildingMatrices.push(m);
+      if(rng()<(selected.map==="core"?.28:.10)){
+        const a=new THREE.Matrix4();a.compose(new THREE.Vector3(lx+w*.47,h*.5,lz),new THREE.Quaternion(),new THREE.Vector3(2,h*.9,1.2));accentMatrices.push(a);
+      }
+    }
+  }
+
+  const material=selected.map==="core"?matCyan:selected.map==="industrial"?matGold:selected.map==="metro"?matPink:matWhite;
+  const inst=new THREE.InstancedMesh(buildingGeo,material,Math.max(1,buildingMatrices.length));
+  buildingMatrices.forEach((m,i)=>inst.setMatrixAt(i,m));inst.count=buildingMatrices.length;inst.instanceMatrix.needsUpdate=true;g.add(inst);
+  if(accentMatrices.length){const am=new THREE.InstancedMesh(accentGeo,def.accent===0xffc94a?goldMat:def.accent===0xff42d7?pinkMat:cyanMat,accentMatrices.length);accentMatrices.forEach((m,i)=>am.setMatrixAt(i,m));am.instanceMatrix.needsUpdate=true;g.add(am)}
+  g.userData.buildingCount=buildingMatrices.length;scene.add(g);chunks.set(key,{group:g,cx,cz,buildings:buildingMatrices.length});
+}
+
+function disposeObject(root){root.traverse(o=>{if(o.geometry&&o.geometry!==buildingGeo&&o.geometry!==accentGeo&&o.geometry!==roadGeoX&&o.geometry!==roadGeoZ&&o.geometry!==roadEdgeX&&o.geometry!==roadEdgeZ){} });}
+function removeChunk(key){const c=chunks.get(key);if(!c)return;scene.remove(c.group);disposeObject(c.group);chunks.delete(key)}
+function streamChunks(force=false){
+  const c=worldChunk(camera.position.x,camera.position.z);const radius=LOAD_RADIUS;
+  for(let x=-radius;x<=radius;x++)for(let z=-radius;z<=radius;z++)makeChunk(c.cx+x,c.cz+z);
+  for(const[key,ch]of chunks){if(Math.abs(ch.cx-c.cx)>radius||Math.abs(ch.cz-c.cz)>radius)removeChunk(key)}
+}
+
+/* ------------------------- Iron Man model ------------------------- */
+const ironMan=new THREE.Group();scene.add(ironMan);
+/* Compact third-person scale: the city should feel huge around Iron Man. */
+ironMan.scale.setScalar(0.48);
+ironMan.position.set(0,360,0);
+const suitMat=new THREE.MeshStandardMaterial({color:0xb3131d,metalness:.82,roughness:.32});
+const suitDark=new THREE.MeshStandardMaterial({color:0x5d080d,metalness:.72,roughness:.36});
+const suitGold=new THREE.MeshStandardMaterial({color:0xd69d2b,metalness:.86,roughness:.23});
+const suitGlow=new THREE.MeshBasicMaterial({color:0x9cffff});
+const suitBlue=new THREE.MeshBasicMaterial({color:0x00eaff});
+function box(w,h,d,mat){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat)}
+function sphere(r,mat){return new THREE.Mesh(new THREE.SphereGeometry(r,16,16),mat)}
+
+const torso=box(45,65,26,suitMat);torso.position.y=0;ironMan.add(torso);
+const chest=box(34,38,5,suitGold);chest.position.set(0,7,-15);ironMan.add(chest);
+const reactor=sphere(7,suitGlow);reactor.position.set(0,7,-18);ironMan.add(reactor);
+const neck=box(14,12,14,suitDark);neck.position.y=39;ironMan.add(neck);
+const head=box(31,36,27,suitMat);head.position.y=65;ironMan.add(head);
+const face=box(25,9,5,suitGold);face.position.set(0,67,-15);ironMan.add(face);
+const eyeL=box(7,2,2,suitBlue),eyeR=box(7,2,2,suitBlue);eyeL.position.set(-7,70,-18);eyeR.position.set(7,70,-18);ironMan.add(eyeL,eyeR);
+function limb(x,y,z,w,h,d,mat){const m=box(w,h,d,mat);m.position.set(x,y,z);ironMan.add(m);return m}
+const armL=limb(-34,0,0,14,58,17,suitMat),armR=limb(34,0,0,14,58,17,suitMat);
+const foreL=limb(-37,-39,0,13,32,16,suitDark),foreR=limb(37,-39,0,13,32,16,suitDark);
+const legL=limb(-12,-65,0,16,55,19,suitMat),legR=limb(12,-65,0,16,55,19,suitMat);
+const bootL=limb(-12,-93,-2,18,20,25,suitDark),bootR=limb(12,-93,-2,18,20,25,suitDark);
+const handL=sphere(7,suitGlow),handR=sphere(7,suitGlow);handL.position.set(-37,-57,-1);handR.position.set(37,-57,-1);ironMan.add(handL,handR);
+const thrusterL=sphere(8,suitBlue),thrusterR=sphere(8,suitBlue);thrusterL.position.set(-10,-101,1);thrusterR.position.set(10,-101,1);ironMan.add(thrusterL,thrusterR);
+
+function configureSuit(){
+  const s=armourStats[selected.armour];
+  armourReadout.textContent=selected.armour;
+  player.maxHealth=s.maxHealth;player.health=s.maxHealth;player.energy=s.maxEnergy;player.maxEnergy=s.maxEnergy;
+}
+
+/* ------------------------- VFX ------------------------- */
+const particles=[];
+function spark(pos,color,size=.7,life=.45,velocity={x:0,y:0,z:0}){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(size,6,6),new THREE.MeshBasicMaterial({color,transparent:true,opacity:1}));m.position.copy(pos);m.userData={life,max:life,vx:velocity.x,vy:velocity.y,vz:velocity.z};scene.add(m);particles.push(m)
+}
+function burst(pos,color,count=12){for(let i=0;i<count;i++)spark(pos,color,.8+Math.random()*1.4,.25+Math.random()*.5,{x:(Math.random()-.5)*180,y:(Math.random()-.5)*180,z:(Math.random()-.5)*180})}
+
+/* ------------------------- Projectiles ------------------------- */
+const shots=[];
+const shotGeo=new THREE.SphereGeometry(3.5,10,10);
+const shotMat=new THREE.MeshBasicMaterial({color:0xbfffff});
+function fire(){
+  if(!state.playing||state.paused)return;
+  const s=armourStats[selected.armour];
+  if(player.fireCooldown>0||player.energy<s.shotCost||player.heat>94)return;
+  player.energy-=s.shotCost;player.heat+=s.heatPerShot;player.fireCooldown=.13;
+  /* Repulsors follow Iron Man's body, not the camera.  The suit's
+     forward/front is local -Z, so getWorldDirection gives the exact
+     direction the armour is facing. */
+  const dir=ironMan.getWorldDirection(new THREE.Vector3()).normalize();
+  const leftHand=handL.getWorldPosition(new THREE.Vector3());
+  const rightHand=handR.getWorldPosition(new THREE.Vector3());
+  const startL=leftHand.add(dir.clone().multiplyScalar(8));
+  const startR=rightHand.add(dir.clone().multiplyScalar(8));
+  [startL,startR].forEach(start=>{
+    const mesh=new THREE.Mesh(shotGeo,shotMat);mesh.position.copy(start);scene.add(mesh);
+    shots.push({mesh,velocity:dir.clone().multiplyScalar(1550),life:1.1});
+    burst(start,0x9fffff,3);
+  });
+}
+
+/* ------------------------- Enemy drones ------------------------- */
+const enemies=[];
+const enemyBodyGeo=new THREE.OctahedronGeometry(19,0);
+const enemyBodyMat=new THREE.MeshStandardMaterial({color:0x3b185d,metalness:.7,roughness:.35,emissive:0x2b0d46});
+function spawnEnemy(){
+  const target=camera.position.clone();
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  const side=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion).normalize();
+  const spawn=target.clone().add(dir.multiplyScalar(-750)).add(side.multiplyScalar(randomRange(-500,500)));spawn.y+=randomRange(-180,180);
+  const group=new THREE.Group();group.position.copy(spawn);const body=new THREE.Mesh(enemyBodyGeo,enemyBodyMat);group.add(body);
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(5,10,10),new THREE.MeshBasicMaterial({color:0xff3155}));eye.position.z=-16;group.add(eye);
+  const wingMat=new THREE.MeshBasicMaterial({color:0xa65dff});
+  const wing1=new THREE.Mesh(new THREE.BoxGeometry(50,4,5),wingMat);wing1.position.x=-25;group.add(wing1);
+  const wing2=wing1.clone();wing2.position.x=25;group.add(wing2);
+  scene.add(group);enemies.push({group,hp:1.5,speed:115+Math.random()*90,wobble:Math.random()*6.28,phase:Math.random()*6.28});
+}
+
+/* ------------------------- Traffic ------------------------- */
+const traffic=[];const TRAFFIC=220;
+const carGeo=new THREE.BoxGeometry(25,3,7);const carMat=new THREE.MeshBasicMaterial({color:0xd7fbff});
+const carGlowGeo=new THREE.BoxGeometry(48,1.5,1.8);const carGlowMat=new THREE.MeshBasicMaterial({color:0x00eaff,transparent:true,opacity:.42,blending:THREE.AdditiveBlending,depthWrite:false});
+const carMesh=new THREE.InstancedMesh(carGeo,carMat,TRAFFIC);const carGlow=new THREE.InstancedMesh(carGlowGeo,carGlowMat,TRAFFIC);scene.add(carMesh,carGlow);
+const carMatrix=new THREE.Matrix4();const carQuat=new THREE.Quaternion();
+function initTraffic(){
+  const r=seeded(8219);traffic.length=0;
+  for(let i=0;i<TRAFFIC;i++){
+    const xAxis=r()<.5;const lane=Math.round((-HALF_WORLD+r()*WORLD_SIZE)/ROAD_SPACING)*ROAD_SPACING;const position=-HALF_WORLD+r()*WORLD_SIZE;const dir=r()<.5?1:-1;
+    traffic.push({x:xAxis?position:lane,z:xAxis?lane:position,axis:xAxis?"x":"z",dir,speed:80+r()*270,phase:r()*Math.PI*2});
+  }
+}
+function updateTraffic(dt){
+  const scale=mapDefs[selected.map].trafficScale;
+  for(let i=0;i<traffic.length;i++){
+    const c=traffic[i];const step=c.speed*scale*c.dir*dt;if(c.axis==="x")c.x+=step;else c.z+=step;
+    if(c.x>HALF_WORLD+100)c.x=-HALF_WORLD-100;if(c.x<-HALF_WORLD-100)c.x=HALF_WORLD+100;if(c.z>HALF_WORLD+100)c.z=-HALF_WORLD-100;if(c.z<-HALF_WORLD-100)c.z=HALF_WORLD+100;
+    c.phase+=dt*3;
+    if(c.axis==="x")carQuat.setFromEuler(new THREE.Euler(0,c.dir>0?0:Math.PI,0));else carQuat.setFromEuler(new THREE.Euler(0,c.dir>0?Math.PI/2:-Math.PI/2,0));
+    carMatrix.compose(new THREE.Vector3(c.x,4+Math.sin(c.phase)*.3,c.z),carQuat,new THREE.Vector3(1,1,1));carMesh.setMatrixAt(i,carMatrix);
+    carMatrix.compose(new THREE.Vector3(c.x-(c.axis==="x"?c.dir*24:0),4.7,c.z-(c.axis==="z"?c.dir*24:0)),carQuat,new THREE.Vector3(1,1,1));carGlow.setMatrixAt(i,carMatrix);
+  }
+  carMesh.instanceMatrix.needsUpdate=true;carGlow.instanceMatrix.needsUpdate=true;
+}
+initTraffic();
+
+/* ------------------------- Gameplay state ------------------------- */
+const state={playing:false,paused:false,gameOver:false,score:0,spawnTimer:0,spawnRate:1.1,streamTimer:0,last:0,boostFlash:0};
+const player={maxHealth:100,health:100,maxEnergy:100,energy:100,heat:0,maxHeat:100,fireCooldown:0,hitCooldown:0};
+const keys=Object.create(null);
+let yaw=0,pitch=-.08,mouseDown=false,lastMX=0,lastMY=0;
+window.addEventListener("keydown",e=>{keys[e.code]=true;if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))e.preventDefault();if(e.code==="Escape")togglePause()});
+window.addEventListener("keyup",e=>keys[e.code]=false);
+renderer.domElement.addEventListener("mousedown",e=>{mouseDown=true;lastMX=e.clientX;lastMY=e.clientY});
+window.addEventListener("mouseup",()=>mouseDown=false);
+window.addEventListener("mousemove",e=>{if(!mouseDown||!state.playing)return;const dx=e.clientX-lastMX,dy=e.clientY-lastMY;lastMX=e.clientX;lastMY=e.clientY;yaw-=dx*.0022;pitch-=dy*.002;pitch=clamp(pitch,-1.3,1.2)});
+renderer.domElement.addEventListener("click",()=>{if(state.playing)fire()});
+
+function clearCombat(){shots.forEach(s=>scene.remove(s.mesh));shots.length=0;enemies.forEach(e=>scene.remove(e.group));enemies.length=0;particles.forEach(p=>scene.remove(p));particles.length=0}
+
+function resetWorld(){
+  for(const key of Array.from(chunks.keys()))removeChunk(key);
+  clearCombat();
+  const def=mapDefs[selected.map];
+  scene.background=new THREE.Color(def.sky);scene.fog=new THREE.FogExp2(def.sky,def.fog);
+  ironMan.position.set(...def.start);
+  camera.position.copy(ironMan.position).add(new THREE.Vector3(0,30,130));
+  yaw=0;pitch=-.08;velocity.set(0,0,0);
+  neonCyanLight.position.set(ironMan.position.x,900,ironMan.position.z);neonGoldLight.position.set(ironMan.position.x+900,600,ironMan.position.z-1000);
+  streamChunks(true);
+}
+
+const velocity=new THREE.Vector3();const targetVelocity=new THREE.Vector3();
+function updateIronMan(dt){
+  const s=armourStats[selected.armour];
+  const rotation=new THREE.Euler(pitch,yaw,0,"YXZ");
+  camera.quaternion.setFromEuler(rotation);
+  const forward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  const right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion).normalize();
+  const up=new THREE.Vector3(0,1,0);
+  targetVelocity.set(0,0,0);
+  if(keys.KeyW||keys.ArrowUp)targetVelocity.add(forward);
+  if(keys.KeyS||keys.ArrowDown)targetVelocity.sub(forward);
+  if(keys.KeyD||keys.ArrowRight)targetVelocity.add(right);
+  if(keys.KeyA||keys.ArrowLeft)targetVelocity.sub(right);
+  if(keys.KeyR)targetVelocity.add(up);
+  if(keys.KeyF)targetVelocity.sub(up);
+  if(targetVelocity.lengthSq()>0)targetVelocity.normalize();
+
+  /* Hold SPACE to fire the two hand repulsors. */
+  if(keys.Space)fire();
+  const boosting=keys.ShiftLeft||keys.ShiftRight;
+  const speed=s.speed*(boosting?s.boost:1);
+  targetVelocity.multiplyScalar(speed);
+  velocity.lerp(targetVelocity,1-Math.exp(-6*dt));
+  ironMan.position.addScaledVector(velocity,dt);
+  if(boosting&&targetVelocity.lengthSq()>0){player.energy-=18*dt;state.boostFlash=Math.min(1,state.boostFlash+.12)}else{state.boostFlash=Math.max(0,state.boostFlash-.08)}
+  player.energy+=15*dt;player.heat-=17*dt;
+  player.energy=clamp(player.energy,0,player.maxEnergy);player.heat=clamp(player.heat,0,player.maxHeat);player.fireCooldown=Math.max(0,player.fireCooldown-dt);player.hitCooldown=Math.max(0,player.hitCooldown-dt);
+  ironMan.position.x=clamp(ironMan.position.x,-HALF_WORLD+120,HALF_WORLD-120);ironMan.position.z=clamp(ironMan.position.z,-HALF_WORLD+120,HALF_WORLD-120);ironMan.position.y=clamp(ironMan.position.y,25,5000);
+  /* Keep a comfortable third-person chase distance that matches the
+     smaller suit. */
+  const cameraOffset=new THREE.Vector3(0,30,115).applyQuaternion(camera.quaternion);
+  const desiredCamera=ironMan.position.clone().add(cameraOffset);
+  camera.position.lerp(desiredCamera,1-Math.exp(-7*dt));
+
+  /*
+     IMPORTANT: the armour model's nose/front points along local -Z.
+     The previous atan2(velocity.x, velocity.z) formula rotated the suit
+     backwards for W/forward movement. This version maps world velocity
+     onto the suit's actual -Z forward axis, so W, S, A and D all produce
+     intuitive facing.
+  */
+  if(velocity.lengthSq()>50){
+    const heading=Math.atan2(velocity.x,-velocity.z);
+    ironMan.rotation.y=heading;
+    ironMan.rotation.z=clamp(-velocity.x*.00045,-.14,.14);
+  }
+  ironMan.rotation.x=clamp(-velocity.y*.00035,-.12,.12);
+  /* Flight glow scales with throttle. */
+  const glowScale=1+(boosting?.65:.2)+state.boostFlash*.45;thrusterL.scale.setScalar(glowScale);thrusterR.scale.setScalar(glowScale);reactor.scale.setScalar(1+Math.sin(performance.now()*.015)*.08);handL.scale.setScalar(boosting?1.5:1);handR.scale.setScalar(boosting?1.5:1);
+}
+
+function damage(amount){if(player.hitCooldown>0)return;player.health-=amount;player.hitCooldown=.35;burst(ironMan.position,0xff4768,14);if(player.health<=0)endGame()}
+
+function updateShots(dt){
+  for(let i=shots.length-1;i>=0;i--){const s=shots[i];s.mesh.position.addScaledVector(s.velocity,dt);s.life-=dt;
+    let remove=s.life<=0;
+    for(let j=enemies.length-1;j>=0&&!remove;j--){const e=enemies[j];if(s.mesh.position.distanceTo(e.group.position)<28){e.hp-=1;remove=true;burst(e.group.position,0xffc94a,7);if(e.hp<=0){scene.remove(e.group);enemies.splice(j,1);state.score+=150;showMessage("HOSTILE DESTROYED",500)}}}
+    if(remove){scene.remove(s.mesh);shots.splice(i,1)}
+  }
+}
+
+function updateEnemies(dt){
+  const target=ironMan.position;
+  const rate=mapDefs[selected.map].droneRate;
+  state.spawnTimer+=dt;
+  state.spawnRate=Math.max(.42,1.1-(state.score/30000)*.35);
+  if(state.spawnTimer>state.spawnRate*rate&&enemies.length<14){state.spawnTimer=0;spawnEnemy()}
+  for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];e.phase+=dt*2;e.group.position.y+=Math.sin(e.phase)*28*dt;e.group.lookAt(target);e.group.translateZ(-e.speed*dt);if(e.group.position.distanceTo(target)<55){damage(14);burst(e.group.position,0xff4768,12);scene.remove(e.group);enemies.splice(i);state.score=Math.max(0,state.score-25)}}
+}
+
+function updateParticles(dt){for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.position.x+=p.userData.vx*dt;p.position.y+=p.userData.vy*dt;p.position.z+=p.userData.vz*dt;p.userData.life-=dt;p.material.opacity=clamp(p.userData.life/p.userData.max,0,1);if(p.userData.life<=0){scene.remove(p);particles.splice(i,1)}}}
+
+function updateHUD(dt){
+  scoreValue.textContent=fmtScore(state.score);healthFill.style.width=(player.health/player.maxHealth*100)+"%";energyFill.style.width=(player.energy/player.maxEnergy*100)+"%";heatFill.style.width=(player.heat/player.maxHeat*100)+"%";
+  mapReadout.textContent=mapDefs[selected.map].name;altitudeValue.textContent=Math.round(ironMan.position.y)+" M";threatValue.textContent=enemies.length;
+  const locked=enemies.length>0;targetReticle.classList.toggle("active",locked);if(locked){const e=enemies[0].group;const v=e.position.clone().project(camera);targetReticle.style.left=((v.x+1)*50)+"%";targetReticle.style.top=((-v.y+1)*50)+"%"}
+  /* District comes from current coordinate, with the menu-selected map acting as the world profile. */
+  districtName.textContent=mapDefs[selected.map].name;districtDesc.textContent=mapDefs[selected.map].description;
+}
+
+function togglePause(){if(!state.playing||state.gameOver)return;state.paused=!state.paused;pauseButton.textContent=state.paused?"RESUME [ESC]":"PAUSE [ESC]";showMessage(state.paused?"SIMULATION PAUSED":"SIMULATION RESUMED",700)}
+function startGame(){configureSuit();state.score=0;state.gameOver=false;state.paused=false;state.playing=true;gameover.classList.remove("active");pauseButton.textContent="PAUSE [ESC]";resetWorld();mapReadout.textContent=mapDefs[selected.map].name;showMessage("FLIGHT SYSTEM ONLINE",1200);menu.classList.remove("active");game.classList.add("active")}
+function endGame(){if(state.gameOver)return;state.gameOver=true;state.playing=false;finalScore.textContent=fmtScore(state.score);if(state.score>savedHigh){savedHigh=Math.floor(state.score);localStorage.setItem("ironManMegaHigh",savedHigh)}highScore.textContent=fmtScore(savedHigh);gameover.classList.add("active")}
+function returnMenu(){state.playing=false;state.gameOver=false;gameover.classList.remove("active");game.classList.remove("active");menu.classList.add("active")}
+startButton.addEventListener("click",startGame);restartButton.addEventListener("click",startGame);menuButton.addEventListener("click",returnMenu);pauseButton.addEventListener("click",togglePause);
+
+/* ------------------------- initial / resize ------------------------- */
+window.addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7))});
+
+/* ------------------------- main loop ------------------------- */
+let streamClock=0;let fpsClock=0,fpsFrames=0,fps=60;
+function animate(t){requestAnimationFrame(animate);let dt=(t-(state.last||t))/1000;state.last=t;dt=Math.min(dt,MAX_DT);
+  if(state.playing&&!state.paused){
+    updateIronMan(dt);updateShots(dt);updateEnemies(dt);updateParticles(dt);updateTraffic(dt);state.score+=dt*5;streamClock+=dt;if(streamClock>.35){streamClock=0;streamChunks()}neonCyanLight.position.lerp(new THREE.Vector3(ironMan.position.x,900,ironMan.position.z),.025);neonGoldLight.position.lerp(new THREE.Vector3(ironMan.position.x+800,600,ironMan.position.z-1000),.02);updateHUD(dt)
+  }
+  fpsClock+=dt;fpsFrames++;if(fpsClock>.5){fps=Math.round(fpsFrames/fpsClock);fpsClock=0;fpsFrames=0}
+  renderer.render(scene,camera)
+}
+
+/* Create an initial map so the first transition is immediate. */
+resetWorld();
+requestAnimationFrame(animate);
+
+</script>
+</body>
+</html>
